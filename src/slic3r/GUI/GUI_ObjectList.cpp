@@ -635,7 +635,16 @@ void ObjectList::get_settings_choice(const wxString& category_name)
     // Add settings item for object
     const auto item = GetSelection();
     if (item) {
-        const auto settings_item = m_objects_model->GetSettingsItem(item);
+        auto settings_item = m_objects_model->GetSettingsItem(item);
+
+        // if settings_item is now false, the settings item is either not created yet, OR it is already selected
+        // we must first check if the latter is not the case before adding it:
+        if (!settings_item) {
+            PrusaObjectDataViewModelNode* selected_node = (PrusaObjectDataViewModelNode*)item.GetID();
+            if (selected_node && selected_node->m_type == itSettings)
+                settings_item = item;
+        }
+        
         select_item(settings_item ? settings_item :
             m_objects_model->AddSettingsChild(item));
     }
